@@ -125,7 +125,7 @@ financial-education-mvp/
 | 2 | **I: Integrator** | Connects A + B + C into one working flow | May edit ANY file, but ONLY to fix interface mismatches. No new features. | Fresh start → onboarding → click AAPL → full snapshot + earnings with AI text → ask chat about it → works for all 5 tickers in demo mode · committed |
 | 3 | **D: Features** | Adds the supporting features | `alerts_service.py`, `routes/alerts.py`, `alerts.js`, `checklist.js`, `features.css`, `test_alerts.py` | Alerts appear only for watchlist tickers, every alert says "Simulated alert: demo only", every figure comes from `demo_stocks.json` · checklist opens from header and from chat link · committed |
 | 3 | **E: Live Data** | Switches on real data safely and makes the demo fast | Provider clients, `market_data.py`, `warmup.py` (now owned by E) | `DATA_MODE=live` returns live data with `source: "live"` · any provider failure falls back to demo with no crash · `WARM_CACHE=1` pre-loads 5 tickers + AI explanations for the default profile · committed |
-| 4 | **I2: Final Integrator** | Re-runs integration after D and E land. Fixes mismatches only. | Same rules as Agent I. Appends to `docs/INTEGRATION_NOTES.md`. | `pytest` passes across all agents' tests · full 13-step end-to-end check passes in demo mode **and** in live mode with `WARM_CACHE=1` · alerts and checklist work from the real UI · static checks pass · committed · `git tag demo-ready` |
+| 4 | **I2: Final Integrator** | Re-runs integration after D and E land. Fixes mismatches only. | Same rules as Agent I. Appends to `docs/INTEGRATION_NOTES.md`. | `pytest` passes across all agents' tests · full 17-step end-to-end check (`PROMPT_I_INTEGRATOR.md` §3; check 17 is live mode only) passes in demo mode **and** in live mode with `WARM_CACHE=1` · alerts and checklist work from the real UI · static checks pass · committed · `git tag demo-ready` |
 
 **Parallel rules for Waves 1 and 3:** agents in the same wave never edit the same file.
 They meet only at the interfaces defined in `API_CONTRACT.md` and in section 5 below.
@@ -189,6 +189,7 @@ class InvalidProfile(AppError): code = "INVALID_PROFILE"; http_status = 400
 class DataNotAvailable(AppError): code = "DATA_NOT_AVAILABLE"; http_status = 404
 class ProviderError(AppError): code = "PROVIDER_ERROR"; http_status = 502
 class AIUnavailable(AppError): code = "AI_UNAVAILABLE"; http_status = 503
+class InvalidRequest(AppError): code = "INVALID_REQUEST"; http_status = 400
 
 # routes/envelope.py
 def ok(data, source, as_of): ...   # returns (Response, 200)

@@ -37,6 +37,10 @@ Agents only know what is in `docs/` and their prompt. **Always use the latest ve
 | 4 | Live mapping for `dividend_yield` (Finnhub `/stock/metric`, E verifies) and `expense_ratio` (always `null` live). | `API_CONTRACT.md` §4; `PROMPT_E` §2.2b |
 | 5 | Null plain-string fields (`name`, `sector`, `exchange`, `currency`) defined; UI shows the ticker for a null name. | `API_CONTRACT.md` §3.2; `PROMPT_B` §2.6 |
 | 6 | C2 number-format false positives: **not changed**; measure in rehearsal (step 7 below). | — |
+| 7 | `InvalidRequest` (`INVALID_REQUEST`, 400) added to the error classes. | `ARCHITECTURE.md` §5 |
+| 8 | Missing EPS comparison: `headline.available: false`, `headline` explain is `null` (no fallback). Test T15. | `AI_RULES.md` §5.1, §7, §8; `API_CONTRACT.md` §3.3; `PROMPT_C` |
+| 9 | Dividend: known non-payer gets the "does not pay" explanation; unknown (`pays_dividend: null`) gets `null`. Tests T16 + A's dividend test. | `AI_RULES.md` §5.1, §7, §8; `API_CONTRACT.md` §3.3; `PROMPT_A`, `PROMPT_C` |
+| 10 | Wave 4 done criteria say 17 checks (check 17 live only). | `ARCHITECTURE.md` §3; `PROMPT_I_INTEGRATOR.md` §6 |
 
 ---
 

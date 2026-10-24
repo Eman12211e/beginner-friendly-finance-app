@@ -102,7 +102,7 @@ so a human can review it.
 ## 6. Final report
 
 1. pytest result before and after
-2. End-to-end table: check 1–13, pass/fail, notes
+2. End-to-end table: check 1–13 (Wave 2) or 1–17 (Wave 4), pass/fail, notes
 3. Static check results (§2 step 5)
 4. Every change made (copy of `INTEGRATION_NOTES.md`)
 5. Unresolved problems, with evidence (or "none")

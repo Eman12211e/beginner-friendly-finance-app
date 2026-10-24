@@ -82,7 +82,7 @@ Call `ai_service` only through `from services import ai_service` then `ai_servic
 - `change_percent` null when prior is 0.
 - Direction thresholds: +0.4 → flat, +0.6 → up, -0.6 → down.
 - EPS: actual 1.23 / estimate 1.20 → above, difference display `$0.03`; 1.20/1.20 → equal; 1.21/1.20 → above (difference exactly 0.01 after rounding, despite float error); 1.19/1.20 → below; missing estimate → comparison null, headline label `"EPS vs. analyst estimate: Data not available"`.
-- Dividend non-payer → `last_amount.display == "Data not available"`.
+- Dividend non-payer → `pays_dividend: false` and `last_amount.display == "Data not available"`. Unknown dividend data → `pays_dividend: null`.
 - Route: missing `age_range` → 400 `INVALID_PROFILE`; VOO → `is_etf: true`, `sections: null`, `etf_message` exact text.
 - Route with patched `explain_earnings` returning text → text lands in the right `explain` fields and no number changes.
 - Removing `net_income` from a synthetic quarter → profit `value.display == "Data not available"`.

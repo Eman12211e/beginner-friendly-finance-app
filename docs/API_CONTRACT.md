@@ -223,7 +223,7 @@ come from `ai_service.explain_earnings()`.
   For ETFs: `etf`, `questions`.
 - Mapping into `data`: `headline` → `headline.explain`; each section key → `sections.<key>.explain`;
   `questions` → `questions_to_think_about`; `etf` → `etf_explain`. Stock responses have no `etf_explain` field.
-- If the section's main value is `null`, its `explain` is `null`. The UI then shows nothing extra.
+- If the section's main value is `null`, its `explain` is `null`. For `headline`, the main value is `comparison`. For `dividend`, the main value is `pays_dividend`: `true` or `false` gets an explanation, `null` (unknown) gets `null`. The UI then shows nothing extra.
 - `explanation_source`: `"ai"` if Claude's output was used, `"fallback"` if pre-written text was used.
 - Full content rules: `docs/AI_RULES.md`.
 

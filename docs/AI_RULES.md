@@ -87,7 +87,7 @@ Python sends only the fields below. **No raw API responses. No news. No extra te
 {
   "is_etf": false,
   "profile": { "age_range": "25-34", "risk": "medium" },
-  "headline": { "comparison": "above" },
+  "headline": { "available": true, "comparison": "above" },
   "revenue":  { "available": true, "direction": "up" },
   "profit":   { "available": true, "direction": "down" },
   "eps":      { "available": true, "comparison": "above" },
@@ -98,6 +98,7 @@ Python sends only the fields below. **No raw API responses. No news. No extra te
 
 Claude gets **directions and comparisons, not the numbers.** It cannot repeat or misread a number it never sees.
 `available: false` means the value is `null`. For that section Claude returns `null`.
+For `headline`, `available` is `false` when `comparison` is `null`. For `dividend`, `available` is `false` only when `pays_dividend` is `null` (unknown); a known non-payer (`false`) is available.
 
 ### 5.2 System prompt (put in `prompts.py` as `EARNINGS_SYSTEM_PROMPT`, word for word)
 
@@ -220,6 +221,7 @@ Used when Claude fails or a field fails validation. Python picks the variant by 
 - above: "The company reported earnings per share above the analyst estimate. An analyst estimate is the average forecast from people who study the company. A result above it is often in the news, but it is only one piece of information."
 - below: "The company reported earnings per share below the analyst estimate. An analyst estimate is the average forecast from people who study the company. A result below it is often in the news, but it is only one piece of information."
 - equal: "The company reported earnings per share equal to the analyst estimate. An analyst estimate is the average forecast from people who study the company. This is only one piece of information."
+- null comparison: no fallback. `headline` is null (V6).
 
 **revenue**
 - up: "Revenue is the money a company gets from selling its products or services. Revenue went up compared to the same quarter last year. The data does not show the reason for this change."
@@ -240,6 +242,7 @@ Used when Claude fails or a field fails validation. Python picks the variant by 
 **dividend**
 - pays: "A dividend is a payment a company makes to its shareholders. Companies choose if and when to pay dividends. A company can change or stop its dividend."
 - does not pay: "This company did not pay a dividend in the data shown. Many companies keep their profit to grow the business instead. Not paying a dividend is common."
+- unknown (`pays_dividend` null): no fallback. `dividend` is null (V6).
 
 **etf**
 - any: "An ETF, or exchange-traded fund, holds many investments in one fund. ETFs do not report earnings like a single company does. People often look at what the fund holds and what it costs."
@@ -271,6 +274,8 @@ Used when Claude fails or a field fails validation. Python picks the variant by 
 | T9 | Chat reply contains `$999.99` not in context | Reply replaced with the C2 message |
 | T10 | Chat Claude call fails | Endpoint returns `ok: false`, code `AI_UNAVAILABLE` |
 | T11 | Chat message empty or over 500 chars | `INVALID_REQUEST` |
+| T15 | Facts with EPS `comparison: null`; Claude returns headline text | Payload has `headline.available: false`; `headline` is `null` |
+| T16 | Known non-payer (`pays_dividend: false`), Claude call fails | Payload has `dividend.available: true`; `dividend` is the "does not pay" fallback. With `pays_dividend: null` and Claude text → `dividend` is `null` |
 
 ---
 
