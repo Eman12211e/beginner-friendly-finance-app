@@ -27,7 +27,11 @@ def test_health_envelope(client):
 
 
 def test_index_serves_page(client):
-    assert b"Scaffold running." in client.get("/").data
+    resp = client.get("/")
+    assert resp.status_code == 200
+    for container in (b'id="disclaimer-footer"', b'id="watchlist-root"', b'id="snapshot-root"',
+                      b'id="earnings-root"', b'id="chat-root"'):
+        assert container in resp.data
 
 
 @pytest.mark.parametrize("raw, expected", [("aapl", "AAPL"), (" msft ", "MSFT"), ("BRK.B", "BRK.B")])
