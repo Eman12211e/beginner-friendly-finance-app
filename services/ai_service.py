@@ -31,7 +31,12 @@ _CONTEXT_KEYS = {"ticker", "name", "display", "label", "title", "direction", "co
 
 def _call_claude(system, messages, max_tokens) -> str:
     client = anthropic.Anthropic(api_key=config.ANTHROPIC_API_KEY, timeout=config.AI_TIMEOUT_SECONDS)
-    resp = client.messages.create(model=config.CLAUDE_MODEL, max_tokens=max_tokens, system=system, messages=messages)
+    # Sonnet 5.5 thinks by default and thinking spends max_tokens; between_tools turns it off (valid at default effort).
+    resp = client.messages.create(model=config.CLAUDE_MODEL, max_tokens=max_tokens, system=system, messages=messages,
+                                  thinking={"type": "between_tools"})
+    log.log(logging.WARNING if resp.stop_reason == "max_tokens" else logging.INFO,
+            "claude stop_reason=%s output_tokens=%s max_tokens=%s",
+            resp.stop_reason, getattr(resp.usage, "output_tokens", None), max_tokens)
     return "".join(block.text for block in resp.content if block.type == "text")
 
 

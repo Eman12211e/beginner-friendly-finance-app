@@ -29,3 +29,16 @@ Baseline before any change: `pytest` 75 passed. Commits present: W0 `607f726`, A
 ### Open items (not changed)
 - Real Claude output (check 3 AI text, checks 7 and 8) is unverified until an Anthropic key is used.
 - PROMPT_B_FRONTEND §2.3 names the mock ETF `EXMPLF` (6 letters), which the contract's 1–5 letter ticker rule rejects. The mock is now deleted, so this matters only for the doc.
+
+## Post-integration verification (2026-10-24)
+
+The Wave 2 results above stand as recorded: the Anthropic key was absent during those integration tests. A key was added to `.env` afterwards, and real Claude output was checked with a hard limit of 2 calls per run (`DATA_MODE=demo`, `WARM_CACHE=0`, Finnhub and FMP disabled, SDK retries off).
+
+- [services/ai_service.py] First live run (2 calls): both replies were cut off. Claude Sonnet 5.5 thinks by default when `thinking` is not set, and thinking spends `max_tokens` (300 chat / 900 earnings). Earnings JSON stopped mid-string (V1 → full fallback); chat returned no text (`AI_UNAVAILABLE`). Safe outcomes, but no Claude text reached the user → `_call_claude` now sends `thinking={"type": "between_tools"}` (thinking off; valid at the default effort, no effort setting is sent) and logs `stop_reason`, `output_tokens` and `max_tokens` only (WARNING when `stop_reason=max_tokens`) → mocked tests `test_call_claude_turns_thinking_off_and_logs_stop_reason` and `test_truncated_replies_stay_safe`; `pytest` 78 passed.
+- Second live run (2 calls, after the fix):
+  - AAPL earnings, age 25–34, medium risk: HTTP 200, `explanation_source=ai`, `stop_reason=end_turn`, 412 of 900 output tokens. One validation replacement: `V4 banned term in field=dividend` ("guaranteed" matched `guarantee\w*`), so dividend used the fallback sentence. All other fields were Claude text with no digits, no banned terms and no advice.
+  - Chat "What is EPS?", same profile, no company context: HTTP 200, `stop_reason=end_turn`, 101 of 300 output tokens. A correct educational definition with no numbers or advice; C2 and C3 made no replacement.
+
+### Open items
+- The chat reply had five sentences; CHAT_SYSTEM_PROMPT asks for 2 or 3. Not a safety issue, and no Python check covers chat length (AI_RULES §6.3 has C1–C3 only). The prompt is unchanged for now.
+- Two live samples confirm the fix works; they do not measure how often validation replaces Claude text. That is the rehearsal measurement in WORKFLOW.md step 7.

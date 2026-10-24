@@ -1,5 +1,6 @@
 """Agent C tests. Claude is always mocked (services.ai_service._call_claude); no real API calls."""
 import json
+from types import SimpleNamespace
 
 import pytest
 
@@ -258,6 +259,50 @@ def test_chat_history_trimmed_and_context_reduced(client, claude):
     assert messages[0]["role"] == "user" and len(messages) <= config.CHAT_HISTORY_LIMIT + 1
     system = fake.calls[0]["system"]
     assert "$123.45" in system and '"value"' not in system and "Long text" not in system
+
+
+class FakeAnthropic:
+    """Stands in for anthropic.Anthropic so the real _call_claude runs without a network call."""
+    calls = []
+
+    def __init__(self, text, stop_reason, output_tokens):
+        self.reply = SimpleNamespace(content=[SimpleNamespace(type="text", text=text)], stop_reason=stop_reason,
+                                     usage=SimpleNamespace(output_tokens=output_tokens))
+        self.messages = SimpleNamespace(create=self.create)
+
+    def create(self, **kwargs):
+        FakeAnthropic.calls.append(kwargs)
+        return self.reply
+
+
+def fake_sdk(monkeypatch, text, stop_reason, output_tokens):
+    monkeypatch.setattr(config, "ANTHROPIC_API_KEY", "test-key-not-real")
+    FakeAnthropic.calls = []
+    monkeypatch.setattr(ai_service.anthropic, "Anthropic", lambda **kw: FakeAnthropic(text, stop_reason, output_tokens))
+
+
+def test_call_claude_turns_thinking_off_and_logs_stop_reason(monkeypatch, caplog):
+    fake_sdk(monkeypatch, "EPS means earnings per share.", "end_turn", 12)
+    with caplog.at_level("INFO", logger="services.ai_service"):
+        assert ai_service._call_claude("sys", [{"role": "user", "content": "hi"}], 300) == "EPS means earnings per share."
+    sent = FakeAnthropic.calls[0]
+    assert sent["thinking"] == {"type": "between_tools"}
+    assert sent["model"] == config.CLAUDE_MODEL and sent["max_tokens"] == 300
+    assert "output_config" not in sent  # no effort override; between_tools needs effort high or below
+    assert "stop_reason=end_turn output_tokens=12 max_tokens=300" in caplog.text
+    assert "test-key-not-real" not in caplog.text
+
+
+def test_truncated_replies_stay_safe(client, monkeypatch, caplog):
+    fake_sdk(monkeypatch, '{"headline": "The result is above the', "max_tokens", 900)
+    with caplog.at_level("WARNING", logger="services.ai_service"):
+        out, source = ai_service.explain_earnings(make_facts(), PROFILE)
+    assert source == "fallback" and out["eps"] == FALLBACKS["eps"]["any"]
+    assert "stop_reason=max_tokens" in caplog.text and "V1 invalid JSON" in caplog.text
+
+    fake_sdk(monkeypatch, "", "max_tokens", 300)  # no visible text left
+    resp = post_chat(client, "What is EPS?")
+    assert resp.status_code == 503 and resp.get_json()["error"]["code"] == "AI_UNAVAILABLE"
 
 
 def test_chat_invalid_profile(client, claude):
