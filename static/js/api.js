@@ -10,7 +10,6 @@
   }
 
   function request(url, options) {
-    if (window.MOCK_RESPONSES) return window.MOCK_RESPONSES.respond(url, options);
     return fetch(url, options)
       .then(function (resp) { return resp.json(); })
       .catch(networkError);

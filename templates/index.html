@@ -8,12 +8,6 @@
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="/static/css/style.css">
   <link rel="stylesheet" href="/static/css/features.css">
-  <script>
-    // DEV ONLY: fake data for ?mock=1. Written synchronously so it runs before the deferred api.js.
-    if (/[?&]mock=1(&|$)/.test(location.search)) {
-      document.write('<script src="/static/js/mock_responses.js"><\/script>');
-    }
-  </script>
   <script src="/static/js/api.js" defer></script>
   <script src="/static/js/profile.js" defer></script>
   <script src="/static/js/watchlist.js" defer></script>

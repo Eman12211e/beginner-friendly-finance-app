@@ -150,10 +150,9 @@ button { cursor: pointer; }
 .modal select { padding: 8px; border: 1px solid var(--border); border-radius: 8px; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
 
-/* ---- footer + dev banner ---- */
+/* ---- footer ---- */
 #disclaimer-footer {
   position: sticky; bottom: 0; z-index: 40;
   background: var(--surface); border-top: 1px solid var(--border);
   padding: 10px 24px; font-size: .9rem; color: var(--muted); text-align: center;
 }
-.mock-banner { background: var(--down); color: #fff; text-align: center; font-weight: 700; padding: 6px; }

@@ -13,10 +13,12 @@
     "#chat-root .chat-system{align-self:center;color:#8a1c1c;font-size:.9em}" +
     "#chat-root .chat-divider{align-self:center;color:#6b7280;font-size:.85em}" +
     "#chat-root .chat-starters{display:flex;flex-wrap:wrap;gap:6px}" +
+    "#chat-root .chat-starters[hidden]{display:none}" +
     "#chat-root .chat-starters button,#chat-root .chat-link{border:1px solid #c7cbd1;background:#fff;border-radius:999px;padding:4px 10px;cursor:pointer;font:inherit}" +
     "#chat-root .chat-link{align-self:flex-start;border:none;background:none;color:#1d4ed8;text-decoration:underline;padding:0}" +
     "#chat-root textarea{width:100%;box-sizing:border-box;min-height:64px;font:inherit;padding:8px}" +
     "#chat-root .chat-row{display:flex;gap:8px;align-items:flex-end}" +
+    "#chat-root .chat-row button{flex:none}" +
     "#chat-root .chat-note{font-size:.85em;color:#6b7280;margin-top:6px}" +
     "#chat-root :focus-visible{outline:2px solid #1d4ed8;outline-offset:2px}";
 

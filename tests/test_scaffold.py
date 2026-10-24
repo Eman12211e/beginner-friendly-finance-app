@@ -13,6 +13,12 @@ from services.validation import validate_profile, validate_ticker
 DEMO_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "demo_stocks.json")
 
 
+def test_tests_never_see_real_api_keys():
+    # conftest.py must blank these before config loads, so pytest can never call paid or live APIs
+    assert config.ANTHROPIC_API_KEY == config.FINNHUB_API_KEY == config.FMP_API_KEY == ""
+    assert config.DATA_MODE == "demo" and config.WARM_CACHE is False
+
+
 def test_health_envelope(client):
     resp = client.get("/api/health")
     body = resp.get_json()
