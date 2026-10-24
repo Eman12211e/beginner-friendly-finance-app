@@ -1,9 +1,15 @@
 import os
 import sys
 
-# Must be set before config is imported; load_dotenv does not override existing env vars.
-os.environ["DATA_MODE"] = "demo"
-os.environ["WARM_CACHE"] = "0"
+# Must be set before config is imported. load_dotenv does not override existing env vars,
+# even empty ones, so tests never see real keys from .env and never call paid APIs.
+os.environ.update({
+    "ANTHROPIC_API_KEY": "",
+    "FINNHUB_API_KEY": "",
+    "FMP_API_KEY": "",
+    "DATA_MODE": "demo",
+    "WARM_CACHE": "0",
+})
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import pytest  # noqa: E402
