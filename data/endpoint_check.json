@@ -1,0 +1,68 @@
+{
+  "checked_at": "2026-10-24T22:27:53Z",
+  "results": [
+    {
+      "provider": "finnhub",
+      "endpoint": "quote",
+      "ok": false,
+      "status": null,
+      "note": "SKIP (no key)"
+    },
+    {
+      "provider": "finnhub",
+      "endpoint": "profile2",
+      "ok": false,
+      "status": null,
+      "note": "SKIP (no key)"
+    },
+    {
+      "provider": "finnhub",
+      "endpoint": "earnings",
+      "ok": false,
+      "status": null,
+      "note": "SKIP (no key)"
+    },
+    {
+      "provider": "finnhub",
+      "endpoint": "calendar_earnings",
+      "ok": false,
+      "status": null,
+      "note": "SKIP (no key)"
+    },
+    {
+      "provider": "fmp",
+      "endpoint": "profile",
+      "ok": false,
+      "status": null,
+      "note": "SKIP (no key)"
+    },
+    {
+      "provider": "fmp",
+      "endpoint": "profile_etf",
+      "ok": false,
+      "status": null,
+      "note": "SKIP (no key)"
+    },
+    {
+      "provider": "fmp",
+      "endpoint": "income_statement_q",
+      "ok": false,
+      "status": null,
+      "note": "SKIP (no key)"
+    },
+    {
+      "provider": "fmp",
+      "endpoint": "balance_sheet_q",
+      "ok": false,
+      "status": null,
+      "note": "SKIP (no key)"
+    },
+    {
+      "provider": "fmp",
+      "endpoint": "dividends",
+      "ok": false,
+      "status": null,
+      "note": "SKIP (no key)"
+    }
+  ]
+}
