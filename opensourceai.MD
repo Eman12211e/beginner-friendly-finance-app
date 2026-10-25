@@ -11,6 +11,6 @@ Beginner-friendly personal finance app. `dev/mvp-build` is the active developmen
 - Build in small steps; one feature per commit.
 
 ## Git rules
-
+- What to do
 - Ask before: pushing, force-pushing, deleting files, installing dependencies.
 - Git changes (commits, pushes, merges, tags) require the owner's (Eman's) approval. Commits use the owner's configured Git identity
