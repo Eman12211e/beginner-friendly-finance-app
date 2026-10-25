@@ -1,4 +1,5 @@
 # Beginner Friendly Finance App
+Most AI finance tools try to tell you what to do with your money. This project takes a different approach. It uses AI to make complicated financial information understandable, while leaving the analysis and decisions to the user. The goal isn't to replace financial judgment. It's to help people develop it.
 
 A beginner-friendly financial education web app (Flask + vanilla JS). Specs live in `docs/`.
 
