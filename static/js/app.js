@@ -8,6 +8,7 @@
   if (window.Chat) window.Chat.init();
   if (window.Alerts) window.Alerts.init();
   if (window.Checklist) window.Checklist.init();
+  if (window.RiskEducation) window.RiskEducation.init();
 
   var checklistButton = document.getElementById("checklist-open");
   if (checklistButton) {

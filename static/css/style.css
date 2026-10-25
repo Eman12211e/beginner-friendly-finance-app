@@ -95,6 +95,18 @@ button { cursor: pointer; }
 .watchlist-add input { flex: 1; min-width: 0; padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px; }
 .form-message { color: var(--error); font-size: .9rem; margin-top: 6px; min-height: 1.2em; }
 
+/* ---- risk education panel (bottom of the watchlist sidebar) ---- */
+#risk-education { border-top: 1px solid var(--border); margin-top: 16px; padding-top: 14px; font-size: .9rem; }
+#risk-education .risk-title { font-size: 1rem; }
+#risk-education .risk-levels { list-style: none; margin: 0 0 10px; padding: 0; display: grid; gap: 8px; }
+#risk-education .risk-level { border-radius: 8px; padding: 6px 8px; }
+#risk-education .risk-level.is-current { background: var(--accent-soft); }
+#risk-education .risk-name { font-weight: 600; margin: 0 0 2px; }
+#risk-education .risk-yours { display: inline-block; margin-left: 6px; font-size: .75rem; font-weight: 600; color: var(--accent); }
+#risk-education .risk-text { margin: 0; }
+#risk-education .risk-sources, #risk-education .risk-note { color: var(--muted); font-size: .8rem; margin: 0 0 4px; }
+#risk-education a { color: var(--accent); }
+
 /* ---- snapshot ---- */
 .card-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; }
 .card-head h2 { margin: 0; }

@@ -406,7 +406,7 @@ No frameworks, no ES module bundling. Each JS file attaches one object to `windo
 talks to other modules **only** through these objects and the events below.
 
 ### Script order in `index.html` (owner: B)
-`api.js` → `profile.js` → `watchlist.js` → `company.js` → `chat.js` → `alerts.js` → `checklist.js` → `app.js`
+`api.js` → `profile.js` → `watchlist.js` → `company.js` → `chat.js` → `alerts.js` → `checklist.js` → `risk_education.js` → `app.js`
 
 All are loaded with `defer`. A missing file (before its agent builds it) must not break the page.
 `app.js` checks `if (window.Chat) window.Chat.init()` etc. before calling.
@@ -422,6 +422,7 @@ All are loaded with `defer`. A missing file (before its agent builds it) must no
 | `window.Chat` | C | `init()` |
 | `window.Alerts` | D | `init()` |
 | `window.Checklist` | D | `init()`, `open()` |
+| `window.RiskEducation` | Integrator | `init()`. Static panel, no network calls; re-renders on `app:profile-changed` |
 
 ### DOM containers (created by B in `index.html`)
 
@@ -434,6 +435,7 @@ All are loaded with `defer`. A missing file (before its agent builds it) must no
 | `#chat-root` | C |
 | `#alerts-root` (in the header) | D |
 | `#checklist-root` (modal container) | D |
+| `#risk-education` (bottom of the watchlist sidebar) | Integrator (`risk_education.js`) |
 | `#checklist-open` (header button, created by B) | B creates it; click dispatches `app:open-checklist` |
 | `#disclaimer-footer` | B |
 
@@ -441,7 +443,7 @@ All are loaded with `defer`. A missing file (before its agent builds it) must no
 
 | Event | Fired by | `detail` | Listeners |
 |---|---|---|---|
-| `app:profile-changed` | Profile | `{profile}` | Company (reloads earnings), Chat |
+| `app:profile-changed` | Profile | `{profile}` | Company (reloads earnings), Chat, RiskEducation |
 | `app:watchlist-changed` | Watchlist | `{tickers}` | Alerts |
 | `app:ticker-selected` | Watchlist | `{ticker}` | Company |
 | `app:company-loaded` | Company | `{ticker, source, as_of, snapshot, earnings}` (earnings may be `null` until loaded; fired again when earnings arrive) | Chat |
