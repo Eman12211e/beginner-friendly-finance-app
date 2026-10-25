@@ -1,4 +1,4 @@
-# CLAUDE.md
+# Open Source ai.md
 
 Beginner-friendly personal finance app. `main` is the development branch; remote is `origin` (GitHub).
 
@@ -13,4 +13,4 @@ Beginner-friendly personal finance app. `main` is the development branch; remote
 ## Git rules
 
 - Ask before: pushing, force-pushing, deleting files, installing dependencies.
-- Commits and pushes are authored as Eman only. No Claude co-author lines or mentions of Claude in commit messages or PRs.
+- Commits and pushes are authored by Eman's approval
