@@ -74,6 +74,12 @@ Start: commit `43a2a00`, clean tree. `pytest` 100 passed before and after. `node
 - Step 9 says answers are two or three sentences; the one live chat sample had five (prompt-level, not enforced in Python).
 - Run commands should use the project venv (`venv\Scripts\python app.py`). With `WARM_CACHE=1` and a real key, warmup makes up to 5 paid Claude calls for the default profile.
 
+### Post-Wave 4: risk-specific stock questions (approved enhancement)
+- [services/prompts.py, services/ai_service.py] All profiles saw the same three stock questions, and Claude's questions replaced them when the call succeeded → added `STOCK_QUESTIONS` (approved low/medium/high sets) and `_fixed_questions()`; stock questions now always follow `profile.risk`, for Claude success, field fallback and full fallback. ETF questions and V7 for ETFs are unchanged. No extra Claude call (the AI cache key already includes risk) → `pytest` 107 passed (T17 for all three risks, route test with no key and no Claude call, ETF regression).
+- [docs/AI_RULES.md, docs/API_CONTRACT.md] V7, section 7, T1 and new T17 updated to the deterministic policy; API_CONTRACT §3.3 notes the stock-question source. The 3-question shape is unchanged.
+- Debt and cash flow: the demo data and contract carry revenue, net income, cash and equivalents, EPS, dividend and next earnings date only. FMP's balance sheet response has debt fields but the app does not read them, and no cash-flow endpoint is used. The debt and cash-flow questions are conceptual; no figures were added.
+- Risk education panel (Goldman Sachs source): on hold. The one approved download of the source URL returned HTTP 200 with a 431-byte HTML loader page, not the PDF, so the attribution could not be verified. No panel code was written.
+
 ### Open items
 - Real Claude output beyond the two earlier samples is unverified; measure during rehearsal (WORKFLOW.md step 7).
 - Earnings alerts use saved dates (KO Oct 27, MSFT Oct 28, AAPL Nov 2, NVDA Nov 17, 2026); after a date passes the alert still says "expected" until demo data is rebuilt.

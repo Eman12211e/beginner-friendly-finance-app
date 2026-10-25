@@ -154,7 +154,7 @@ Run these checks **per field**. A field that fails is replaced with its fallback
 | V4 Banned terms | Field matches (case-insensitive, whole words via `\b...\b`) any of: `buy`, `sell`, `hold (it\|this\|the stock\|shares)`, `invest in`, `beat`, `missed`, `undervalued`, `overvalued`, `guarantee\w*`, `will rise`, `will fall`, `will grow`, `strong company`, `healthy`, `cheap`, `expensive`, `because` → fallback. Whole-word matching matters: "selling its products" and "ETFs hold many investments" must pass. |
 | V5 Length | More than 3 sentences or any sentence over 30 words → fallback |
 | V6 Null rule | If Python marked the section `available: false`, force `null` regardless of Claude's output |
-| V7 Questions | Must be a list of exactly 3 strings, each ending in `?`, passing V3 and V4. Otherwise use fallback questions. |
+| V7 Questions | ETF only: must be a list of exactly 3 strings, each ending in `?`, passing V3 and V4. Otherwise use the ETF fallback questions. Stock questions never come from Claude: they are always the fixed set for `profile.risk` in section 7. |
 
 `explanation_source` is `"ai"` if at least one field came from Claude, otherwise `"fallback"`.
 Log every replaced field at WARNING level with the check that failed, e.g. `[services.ai_service] V4 banned term in field=eps ticker=EXMPL`.
@@ -247,10 +247,22 @@ Used when Claude fails or a field fails validation. Python picks the variant by 
 **etf**
 - any: "An ETF, or exchange-traded fund, holds many investments in one fund. ETFs do not report earnings like a single company does. People often look at what the fund holds and what it costs."
 
-**questions (stock)**
-1. "How does revenue this quarter compare to the same quarter last year?"
-2. "Did profit move in the same direction as revenue?"
-3. "What other information would I want before making any decision?"
+**questions (stock), by profile risk.** Always used for stocks, also when Claude's explanations succeed. Python picks the set; Claude's `questions` are ignored. The debt and cash-flow questions are conceptual: the app shows no debt or cash-flow figures.
+
+low:
+1. "How consistently has the company generated profit and positive cash flow?"
+2. "How much debt does the company have, and how could its debt obligations affect financial stability?"
+3. "What financial risks would I want to understand before learning more about this company?"
+
+medium:
+1. "How have revenue, profit, and EPS changed compared with earlier periods?"
+2. "Has the company's debt increased or decreased, and how does that compare with its cash generation?"
+3. "What additional information would help me understand the balance between growth and financial risk?"
+
+high:
+1. "How quickly have revenue and earnings changed, and how consistent has that growth been?"
+2. "How could borrowing and debt obligations affect the company if growth slows or business conditions change?"
+3. "What could cause the company's financial results or share price to become more volatile?"
 
 **questions (ETF)**
 1. "What companies or assets does this fund hold?"
@@ -263,7 +275,7 @@ Used when Claude fails or a field fails validation. Python picks the variant by 
 
 | # | Test | Expected |
 |---|---|---|
-| T1 | Claude returns valid, clean JSON | All fields from Claude, `explanation_source = "ai"` |
+| T1 | Claude returns valid, clean JSON | All explanation fields from Claude, `explanation_source = "ai"`; stock questions are the fixed set for the profile risk |
 | T2 | Claude returns non-JSON | All fields fallback, `"fallback"` |
 | T3 | One field contains a digit | Only that field is fallback |
 | T4 | One field contains "buy" | Only that field is fallback |
@@ -276,6 +288,7 @@ Used when Claude fails or a field fails validation. Python picks the variant by 
 | T11 | Chat message empty or over 500 chars | `INVALID_REQUEST` |
 | T15 | Facts with EPS `comparison: null`; Claude returns headline text | Payload has `headline.available: false`; `headline` is `null` |
 | T16 | Known non-payer (`pays_dividend: false`), Claude call fails | Payload has `dividend.available: true`; `dividend` is the "does not pay" fallback. With `pays_dividend: null` and Claude text → `dividend` is `null` |
+| T17 | Stock facts with each risk (`low`, `medium`, `high`); Claude returns its own questions | `questions` equals the section 7 set for that risk, for Claude success and fallback; still one Claude call; ETF questions unchanged |
 
 ---
 

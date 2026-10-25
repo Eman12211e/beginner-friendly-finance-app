@@ -7,7 +7,7 @@ import pytest
 import config
 from services import ai_service
 from services.earnings_service import build_facts
-from services.prompts import CHAT_FALLBACK_ADVICE, CHAT_FALLBACK_NUMBERS, FALLBACKS
+from services.prompts import CHAT_FALLBACK_ADVICE, CHAT_FALLBACK_NUMBERS, FALLBACKS, STOCK_QUESTIONS
 
 PROFILE = {"age_range": "25-34", "risk": "medium"}
 CLEAN = {
@@ -72,8 +72,9 @@ def test_t1_clean_json_used(claude):
     claude(CLEAN)
     out, source = ai_service.explain_earnings(make_facts(), PROFILE)
     assert source == "ai"
-    for key in ("headline", "revenue", "profit", "eps", "cash", "dividend", "questions"):
+    for key in ("headline", "revenue", "profit", "eps", "cash", "dividend"):
         assert out[key] == CLEAN[key]
+    assert out["questions"] == STOCK_QUESTIONS["medium"]  # stock questions are never Claude's
 
 
 def test_t2_non_json_full_fallback(claude):
@@ -83,7 +84,7 @@ def test_t2_non_json_full_fallback(claude):
     assert out["headline"] == FALLBACKS["headline"]["above"]
     assert out["revenue"] == FALLBACKS["revenue"]["up"]
     assert out["dividend"] == FALLBACKS["dividend"]["pays"]
-    assert out["questions"] == FALLBACKS["questions"]["stock"]
+    assert out["questions"] == STOCK_QUESTIONS["medium"]
 
 
 def test_t3_digit_replaces_only_that_field(claude):
@@ -225,12 +226,47 @@ def test_earnings_route_missing_key_uses_fallback_text(client, monkeypatch):
     assert len(data["questions_to_think_about"]) == 3
 
 
-def test_long_text_and_bad_questions_fall_back(claude):
+def test_long_text_falls_back_and_bad_etf_questions_fall_back(claude):
     long_text = " ".join(["word"] * 31) + "."
-    claude({**CLEAN, "cash": long_text, "questions": ["No question mark", "b?", "c?"]})
+    claude({**CLEAN, "cash": long_text})
     out, _ = ai_service.explain_earnings(make_facts(), PROFILE)
     assert out["cash"] == FALLBACKS["cash"]["any"]  # V5
-    assert out["questions"] == FALLBACKS["questions"]["stock"]  # V7
+    claude({"etf": "An ETF holds many investments in one fund.", "questions": ["No question mark", "b?", "c?"]})
+    out, _ = ai_service.explain_earnings(ETF_FACTS, PROFILE)
+    assert out["questions"] == FALLBACKS["questions"]["etf"]  # V7 still applies to ETF questions
+
+
+@pytest.mark.parametrize("risk", ["low", "medium", "high"])
+def test_t17_stock_questions_follow_profile_risk(claude, risk):
+    fake = claude(CLEAN)  # Claude also returns its own questions; they must be ignored
+    profile = {"age_range": "25-34", "risk": risk}
+    out, source = ai_service.explain_earnings(make_facts(), profile)
+    assert out["questions"] == STOCK_QUESTIONS[risk] and len(out["questions"]) == 3
+    assert source == "ai" and len(fake.calls) == 1  # still exactly one Claude call, none extra for questions
+    claude(error=TimeoutError())
+    ai_service.cache.clear()
+    fallback, _ = ai_service.explain_earnings(make_facts(), profile)
+    assert fallback["questions"] == STOCK_QUESTIONS[risk]  # same set when Claude fails
+
+
+def test_three_risk_sets_are_distinct_and_etf_unchanged():
+    sets = [tuple(STOCK_QUESTIONS[r]) for r in ("low", "medium", "high")]
+    assert len(set(sets)) == 3 and all(len(s) == 3 for s in sets)
+    assert FALLBACKS["questions"]["etf"] == ["What companies or assets does this fund hold?",
+                                             "What does this fund cost each year in fees?",
+                                             "How does this fund fit with what I already own?"]
+
+
+@pytest.mark.parametrize("risk", ["low", "medium", "high"])
+def test_earnings_route_questions_switch_with_profile_and_no_ai_call(client, monkeypatch, risk):
+    monkeypatch.setattr(config, "ANTHROPIC_API_KEY", "")
+    fake = FakeClaude(json.dumps(CLEAN))
+    monkeypatch.setattr(ai_service, "_call_claude", fake)
+    data = client.get(f"/api/stocks/AAPL/earnings?age_range=25-34&risk={risk}").get_json()["data"]
+    assert data["questions_to_think_about"] == STOCK_QUESTIONS[risk]
+    voo = client.get(f"/api/stocks/VOO/earnings?age_range=25-34&risk={risk}").get_json()["data"]
+    assert voo["questions_to_think_about"] == FALLBACKS["questions"]["etf"]
+    assert fake.calls == []  # no key: no Claude call at all
 
 
 def test_c3_advice_replaced_and_links_checklist(client, claude):

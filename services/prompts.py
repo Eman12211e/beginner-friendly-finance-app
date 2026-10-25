@@ -84,17 +84,31 @@ FALLBACKS = {
         "any": "An ETF, or exchange-traded fund, holds many investments in one fund. ETFs do not report earnings like a single company does. People often look at what the fund holds and what it costs.",
     },
     "questions": {
-        "stock": [
-            "How does revenue this quarter compare to the same quarter last year?",
-            "Did profit move in the same direction as revenue?",
-            "What other information would I want before making any decision?",
-        ],
         "etf": [
             "What companies or assets does this fund hold?",
             "What does this fund cost each year in fees?",
             "How does this fund fit with what I already own?",
         ],
     },
+}
+
+# Stock "Questions to think about": always this fixed set for profile.risk, never Claude's (AI_RULES §7).
+STOCK_QUESTIONS = {
+    "low": [
+        "How consistently has the company generated profit and positive cash flow?",
+        "How much debt does the company have, and how could its debt obligations affect financial stability?",
+        "What financial risks would I want to understand before learning more about this company?",
+    ],
+    "medium": [
+        "How have revenue, profit, and EPS changed compared with earlier periods?",
+        "Has the company's debt increased or decreased, and how does that compare with its cash generation?",
+        "What additional information would help me understand the balance between growth and financial risk?",
+    ],
+    "high": [
+        "How quickly have revenue and earnings changed, and how consistent has that growth been?",
+        "How could borrowing and debt obligations affect the company if growth slows or business conditions change?",
+        "What could cause the company's financial results or share price to become more volatile?",
+    ],
 }
 
 CHAT_FALLBACK_NUMBERS = "I can only use numbers that are shown in the app. Open a company on your watchlist, and I can explain its numbers."

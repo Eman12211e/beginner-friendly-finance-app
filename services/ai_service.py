@@ -17,6 +17,7 @@ from services.prompts import (
     EARNINGS_SYSTEM_PROMPT,
     ETF_SYSTEM_PROMPT,
     FALLBACKS,
+    STOCK_QUESTIONS,
 )
 
 log = logging.getLogger(__name__)
@@ -80,9 +81,13 @@ def _available(key, payload):
     return key == "etf" or payload[key]["available"]
 
 
+def _fixed_questions(payload):
+    return list(FALLBACKS["questions"]["etf"] if payload["is_etf"] else STOCK_QUESTIONS[payload["profile"]["risk"]])
+
+
 def _full_fallback(payload):
     out = {k: _fallback(k, payload) if _available(k, payload) else None for k in _keys(payload)}
-    out["questions"] = list(FALLBACKS["questions"]["etf" if payload["is_etf"] else "stock"])
+    out["questions"] = _fixed_questions(payload)
     return out, "fallback"
 
 
@@ -130,6 +135,9 @@ def _validate(raw_text, payload, ticker):
             out[key] = parsed[key].strip()
             from_ai = True
 
+    if not payload["is_etf"]:
+        out["questions"] = _fixed_questions(payload)  # stocks: approved set for profile.risk, never Claude's
+        return out, "ai" if from_ai else "fallback"
     questions = parsed.get("questions")
     ok_questions = (
         isinstance(questions, list) and len(questions) == 3
@@ -141,7 +149,7 @@ def _validate(raw_text, payload, ticker):
         from_ai = True
     else:
         log.warning("V7 questions failed ticker=%s", ticker)
-        out["questions"] = list(FALLBACKS["questions"]["etf" if payload["is_etf"] else "stock"])
+        out["questions"] = _fixed_questions(payload)
     return out, "ai" if from_ai else "fallback"
 
 
@@ -153,7 +161,7 @@ def explain_earnings(facts: dict, profile: dict) -> tuple[dict, str]:
         log.exception("could not build earnings payload ticker=%s", ticker)
         if facts.get("is_etf"):
             return _full_fallback({"is_etf": True})
-        return {**{k: None for k in STOCK_KEYS}, "questions": list(FALLBACKS["questions"]["stock"])}, "fallback"
+        return {**{k: None for k in STOCK_KEYS}, "questions": list(STOCK_QUESTIONS[profile["risk"]])}, "fallback"
     if not config.ANTHROPIC_API_KEY:
         return _full_fallback(payload)
 
