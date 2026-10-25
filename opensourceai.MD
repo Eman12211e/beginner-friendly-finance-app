@@ -13,4 +13,4 @@ Beginner-friendly personal finance app. `dev/mvp-build` is the active developmen
 ## Git rules
 
 - Ask before: pushing, force-pushing, deleting files, installing dependencies.
-- Git changes (commits, pushes, merges, tags) require the owner's (Eman's) approval. Commits use the owner's configured Git identity, with no AI co-author lines or AI attribution in commit messages or PRs.
+- Git changes (commits, pushes, merges, tags) require the owner's (Eman's) approval. Commits use the owner's configured Git identity
