@@ -9,6 +9,7 @@
   if (window.Alerts) window.Alerts.init();
   if (window.Checklist) window.Checklist.init();
   if (window.RiskEducation) window.RiskEducation.init();
+  if (window.Accounts) window.Accounts.init();
 
   var checklistButton = document.getElementById("checklist-open");
   if (checklistButton) {

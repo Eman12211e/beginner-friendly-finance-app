@@ -406,7 +406,7 @@ No frameworks, no ES module bundling. Each JS file attaches one object to `windo
 talks to other modules **only** through these objects and the events below.
 
 ### Script order in `index.html` (owner: B)
-`api.js` → `profile.js` → `watchlist.js` → `company.js` → `chat.js` → `alerts.js` → `checklist.js` → `risk_education.js` → `app.js`
+`api.js` → `profile.js` → `watchlist.js` → `company.js` → `chat.js` → `alerts.js` → `checklist.js` → `risk_education.js` → `accounts.js` → `app.js`
 
 All are loaded with `defer`. A missing file (before its agent builds it) must not break the page.
 `app.js` checks `if (window.Chat) window.Chat.init()` etc. before calling.
@@ -423,6 +423,7 @@ All are loaded with `defer`. A missing file (before its agent builds it) must no
 | `window.Alerts` | D | `init()` |
 | `window.Checklist` | D | `init()`, `open()` |
 | `window.RiskEducation` | Integrator | `init()`. Static panel, no network calls; re-renders on `app:profile-changed` |
+| `window.Accounts` | Integrator | `init()`, `open()`. Static "Brokerage & Investing Accounts 101" modal, no network calls |
 
 ### DOM containers (created by B in `index.html`)
 
@@ -436,6 +437,8 @@ All are loaded with `defer`. A missing file (before its agent builds it) must no
 | `#alerts-root` (in the header) | D |
 | `#checklist-root` (modal container) | D |
 | `#risk-education` (bottom of the watchlist sidebar) | Integrator (`risk_education.js`) |
+| `#accounts-open` (header button "Learn about accounts") | B creates it; `accounts.js` opens the modal on click |
+| `#accounts-root` (modal container) | Integrator (`accounts.js`) |
 | `#checklist-open` (header button, created by B) | B creates it; click dispatches `app:open-checklist` |
 | `#disclaimer-footer` | B |
 
