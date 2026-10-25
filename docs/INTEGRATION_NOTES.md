@@ -42,3 +42,38 @@ The Wave 2 results above stand as recorded: the Anthropic key was absent during 
 ### Open items
 - The chat reply had five sentences; CHAT_SYSTEM_PROMPT asks for 2 or 3. Not a safety issue, and no Python check covers chat length (AI_RULES §6.3 has C1–C3 only). The prompt is unchanged for now.
 - Two live samples confirm the fix works; they do not measure how often validation replaces Claude text. That is the rehearsal measurement in WORKFLOW.md step 7.
+
+## Wave 4 (Agent I2)
+
+Start: commit `43a2a00`, clean tree. `pytest` 100 passed before and after. `node --check` passes for all 8 files in `static/js/`. Agent D and E reports listed no changes needed in files they do not own.
+
+### Changes
+- None. No integration defect was found, so no code changed in Wave 4.
+
+### Verification method
+- Headless Edge with a disposable profile and localhost-only debugging, against a test launcher on port 5055 (port 5000 was in use by a separate app instance and was not touched).
+- The launcher runs the real app in `DATA_MODE=demo`, `WARM_CACHE=0`, with Finnhub and FMP keys blanked. For the AI checks it replaces `ai_service._call_claude` with scripted replies and blocks the real Anthropic client, so every validator (V1–V7, C1–C3) ran end to end with no network call. Check 12 used a second launch with no Anthropic key.
+- External calls in Wave 4: 0 (Anthropic 0, Finnhub 0, FMP 0). The real Anthropic client was never constructed.
+
+### End-to-end results (PROMPT_I_INTEGRATOR §3, demo mode)
+- PASS 1–16. Highlights: AAPL numbers match `demo_stocks.json` (revenue 109417000000, EPS 2.02 vs 1.89243); `explanation_source=ai` with scripted Claude text; a Claude field containing a digit was replaced by its fallback (V3); "You should buy it now." was replaced by the advice fallback and the checklist link appeared (C3 + C1); an invented "$999.99B" chat reply was replaced (C2); chat carried `source=demo`; server stop shows "Could not reach the server." and recovers; one toast with "Simulated alert: demo only", badge 9 cleared on open; removing KO removed its 2 alerts; checklist opens from the header and the chat link, Escape closes and returns focus; 380 px has no horizontal overflow.
+- PASS keyboard: Tab order profile chip → alerts bell → "Before you buy" → watchlist, each with a visible focus outline; Enter activates a ticker button and sends chat.
+- PASS static checks: `fetch(` only in `api.js`; no `innerHTML`; no key, `token=` or `apikey=` value in `static/` or `templates/`; `anthropic` only in `ai_service.py`; provider `requests` only in the two clients and `scripts/`; `yfinance` only in `build_demo_data.py`; all AI_RULES §9 copy, including Agent D's alert label and checklist text, present word for word.
+- NOT RUN 17 (live mode): real provider calls were not approved for this wave. Evidence instead is Agent E's live run at `43a2a00` (prices equal to demo, market cap within 0.2%, revenue and net income identical for the same quarter, `live` → `cache` provenance with the original `as_of`, demo fallback never reported as `cache`, wrong-key fallback with no crash and no key in the log).
+
+### Provider differences reviewed (all labels correct; no live/demo mixing)
+- AAPL EPS: live (Finnhub) 1.91 vs 1.9271 → "Below"; demo (Yahoo) 2.02 vs 1.89243 → "Above". Each pair is one record of one provider; the headline differs by mode.
+- NVDA: Finnhub labels the EPS quarter "Sep 30, 2026"; the matching income statement is dated Jul 26, 2026. EPS values match demo.
+- `dividend_yield` is null in live mode (Finnhub metric unreliable, e.g. NVDA 0.03% vs 0.47%); `expense_ratio` is null in live mode by contract; VOO name, exchange and sector are null live (no Finnhub profile for the ETF). All show "Data not available".
+- A demo fallback stays cached for its TTL (24 h for financials), correctly labelled "Demo data".
+
+### DEMO_SCRIPT.md accuracy (doc not changed; planner decision)
+- §1 primary mode is live. In live mode, step 4's "EPS vs. analyst estimate: Above" is wrong for AAPL (live shows "Below"), and dividend yield shows "Data not available" for every ticker.
+- Step 3 says "This is live data from Finnhub and FMP." In demo mode the badge reads "Demo data (as of Oct 24, 2026)", so the line needs the demo wording.
+- Step 5 and the first judge answer say Claude never receives the numbers. That is true for earnings explanations; chat does receive the on-screen display strings and may repeat only those (C2 checks this).
+- Step 9 says answers are two or three sentences; the one live chat sample had five (prompt-level, not enforced in Python).
+- Run commands should use the project venv (`venv\Scripts\python app.py`). With `WARM_CACHE=1` and a real key, warmup makes up to 5 paid Claude calls for the default profile.
+
+### Open items
+- Real Claude output beyond the two earlier samples is unverified; measure during rehearsal (WORKFLOW.md step 7).
+- Earnings alerts use saved dates (KO Oct 27, MSFT Oct 28, AAPL Nov 2, NVDA Nov 17, 2026); after a date passes the alert still says "expected" until demo data is rebuilt.
