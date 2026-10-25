@@ -33,7 +33,7 @@ Agents A (backend) and B (frontend) work **in parallel**. You never edit their f
 - If `config.ANTHROPIC_API_KEY` is empty: `explain_earnings` returns full fallback; `chat` raises `AIUnavailable`.
 
 **`explain_earnings(facts, profile)`** (facts = the `data` object A built, API_CONTRACT §3.3):
-1. Build the payload of AI_RULES §5.1 from `facts` (directions and comparisons only, **no numbers**). A section is `available` if its main `value.value` is not `None` (for `eps`: `actual.value`).
+1. Build the payload of AI_RULES §5.1 from `facts` (directions and comparisons only, **no numbers**). A section is `available` if its main `value.value` is not `None` (for `eps`: `actual.value`; for `headline`: `comparison`; for `dividend`: `pays_dividend`).
 2. Check the cache (`ai:earnings:{ticker}:{period_end}:{age_range}:{risk}`; ETFs use `etf` instead of `period_end`).
 3. Call Claude. Run validation V1–V7 from AI_RULES §5.4 per field. Replace failing fields with the matching fallback variant (picked by `direction` / `comparison` / `pays_dividend`). Log each replacement at WARNING with the check id.
 4. V6: force `None` for unavailable sections, always.
@@ -67,7 +67,7 @@ Fill `#chat-root`:
 ## 3. Tests — `tests/test_chat.py`
 
 Patch `services.ai_service._call_claude`. Never call the real API in tests.
-Implement all 11 tests T1–T11 from AI_RULES §8. Also:
+Implement all tests T1–T11 and T15–T16 from AI_RULES §8. Also:
 - T12: payload sent to Claude contains no digits from the facts' financial values (assert on the `messages` passed to the mock).
 - T13: cache — second identical `explain_earnings` call does not call Claude again.
 - T14: a revenue explanation containing "selling its products" passes V4 (whole-word matching).

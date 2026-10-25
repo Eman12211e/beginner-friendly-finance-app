@@ -223,7 +223,8 @@ come from `ai_service.explain_earnings()`.
   For ETFs: `etf`, `questions`.
 - Mapping into `data`: `headline` → `headline.explain`; each section key → `sections.<key>.explain`;
   `questions` → `questions_to_think_about`; `etf` → `etf_explain`. Stock responses have no `etf_explain` field.
-- If the section's main value is `null`, its `explain` is `null`. The UI then shows nothing extra.
+- For stocks, `questions_to_think_about` is always the fixed 3-question set for the request's `risk` (AI_RULES §7), never Claude's. ETFs keep their current questions.
+- If the section's main value is `null`, its `explain` is `null`. For `headline`, the main value is `comparison`. For `dividend`, the main value is `pays_dividend`: `true` or `false` gets an explanation, `null` (unknown) gets `null`. The UI then shows nothing extra.
 - `explanation_source`: `"ai"` if Claude's output was used, `"fallback"` if pre-written text was used.
 - Full content rules: `docs/AI_RULES.md`.
 
@@ -305,6 +306,35 @@ then shows a "Open the pre-purchase checklist" link under the reply.
 | Sort newest `event_date` first. |
 
 ---
+
+### 3.6 Optional Sentiment Explorer (owner: Integrator)
+
+Off unless `SENTIMENT_ENABLED=1`. Classifies fixed, fictional example statements from `data/sentiment_statements.json`
+with the local `ProsusAI/finbert` model. No AI (Claude), no market data, no free-text input. `source` and `as_of` are always `null`.
+
+`GET /api/sentiment/statements` → `data`:
+```json
+{ "enabled": false, "model": "ProsusAI/finbert",
+  "note": "These example statements are fictional and written for this app. ...",
+  "statements": [ { "id": "outlook-raised", "text": "The company raised its full-year sales outlook after a strong quarter." } ] }
+```
+
+`POST /api/sentiment` with body `{ "statement_id": "outlook-raised" }` → `data`:
+```json
+{ "statement_id": "outlook-raised", "text": "...", "model": "ProsusAI/finbert",
+  "inference": "model", "label": "positive",
+  "scores": { "positive": { "value": 94.12, "display": "94.12%" },
+              "negative": { "value": 2.10,  "display": "2.10%" },
+              "neutral":  { "value": 3.78,  "display": "3.78%" } },
+  "reason": null }
+```
+
+| Rule |
+|---|
+| `inference` is `"model"` only when FinBERT actually ran. `label` is the highest of the model's three scores; it is never chosen or invented by the app. |
+| Disabled, packages missing, weights missing, load failure, inference failure or unexpected labels → `inference: "unavailable"`, `label: null`, `scores: null`, and a plain-language `reason`. HTTP 200, `ok: true`. |
+| Unknown, empty or missing `statement_id` → `INVALID_REQUEST` (400). |
+| The model loads lazily from the local Hugging Face cache (`local_files_only`); a request never downloads weights. Real model results are cached per statement for the process. |
 
 ## 4. `data/demo_stocks.json` schema
 
@@ -405,7 +435,7 @@ No frameworks, no ES module bundling. Each JS file attaches one object to `windo
 talks to other modules **only** through these objects and the events below.
 
 ### Script order in `index.html` (owner: B)
-`api.js` → `profile.js` → `watchlist.js` → `company.js` → `chat.js` → `alerts.js` → `checklist.js` → `app.js`
+`api.js` → `profile.js` → `watchlist.js` → `company.js` → `chat.js` → `alerts.js` → `checklist.js` → `risk_education.js` → `accounts.js` → `sentiment.js` → `app.js`
 
 All are loaded with `defer`. A missing file (before its agent builds it) must not break the page.
 `app.js` checks `if (window.Chat) window.Chat.init()` etc. before calling.
@@ -421,6 +451,9 @@ All are loaded with `defer`. A missing file (before its agent builds it) must no
 | `window.Chat` | C | `init()` |
 | `window.Alerts` | D | `init()` |
 | `window.Checklist` | D | `init()`, `open()` |
+| `window.RiskEducation` | Integrator | `init()`. Static panel, no network calls; re-renders on `app:profile-changed` |
+| `window.Accounts` | Integrator | `init()`, `open()`. Static "Brokerage & Investing Accounts 101" modal, no network calls |
+| `window.Sentiment` | Integrator | `init()`, `open()`. Optional Sentiment Explorer; shows its header button only when `/api/sentiment/statements` reports `enabled: true`. `window.Api` also exposes `getSentimentStatements()` and `postSentiment(statementId)`. |
 
 ### DOM containers (created by B in `index.html`)
 
@@ -433,6 +466,11 @@ All are loaded with `defer`. A missing file (before its agent builds it) must no
 | `#chat-root` | C |
 | `#alerts-root` (in the header) | D |
 | `#checklist-root` (modal container) | D |
+| `#risk-education` (bottom of the watchlist sidebar) | Integrator (`risk_education.js`) |
+| `#accounts-open` (header button "Learn about accounts") | B creates it; `accounts.js` opens the modal on click |
+| `#accounts-root` (modal container) | Integrator (`accounts.js`) |
+| `#sentiment-open` (header button "Sentiment Explorer", `hidden` by default) | B creates it; `sentiment.js` shows it when enabled |
+| `#sentiment-root` (modal container) | Integrator (`sentiment.js`) |
 | `#checklist-open` (header button, created by B) | B creates it; click dispatches `app:open-checklist` |
 | `#disclaimer-footer` | B |
 
@@ -440,7 +478,7 @@ All are loaded with `defer`. A missing file (before its agent builds it) must no
 
 | Event | Fired by | `detail` | Listeners |
 |---|---|---|---|
-| `app:profile-changed` | Profile | `{profile}` | Company (reloads earnings), Chat |
+| `app:profile-changed` | Profile | `{profile}` | Company (reloads earnings), Chat, RiskEducation |
 | `app:watchlist-changed` | Watchlist | `{tickers}` | Alerts |
 | `app:ticker-selected` | Watchlist | `{ticker}` | Company |
 | `app:company-loaded` | Company | `{ticker, source, as_of, snapshot, earnings}` (earnings may be `null` until loaded; fired again when earnings arrive) | Chat |
