@@ -41,5 +41,15 @@
     getHealth: function () {
       return request("/api/health");
     },
+    getSentimentStatements: function () {
+      return request("/api/sentiment/statements");
+    },
+    postSentiment: function (statementId) {
+      return request("/api/sentiment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ statement_id: statementId }),
+      });
+    },
   };
 })();

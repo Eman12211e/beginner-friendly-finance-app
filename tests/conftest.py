@@ -9,6 +9,7 @@ os.environ.update({
     "FMP_API_KEY": "",
     "DATA_MODE": "demo",
     "WARM_CACHE": "0",
+    "SENTIMENT_ENABLED": "0",
 })
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 

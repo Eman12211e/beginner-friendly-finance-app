@@ -3,7 +3,7 @@ import logging
 from flask import Flask, render_template
 
 import config
-from routes import alerts, chat, earnings, stocks
+from routes import alerts, chat, earnings, sentiment, stocks
 from routes.envelope import ok
 from services import warmup
 
@@ -14,7 +14,7 @@ def create_app():
         format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
     )
     app = Flask(__name__)
-    for module in (stocks, earnings, chat, alerts):
+    for module in (stocks, earnings, chat, alerts, sentiment):
         app.register_blueprint(module.bp)
 
     @app.get("/")

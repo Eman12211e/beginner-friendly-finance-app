@@ -3,3 +3,7 @@ venv/
 __pycache__/
 *.pyc
 .pytest_cache/
+# Model weights and caches (FinBERT is CC BY-NC-SA 4.0; never commit them)
+*.safetensors
+hf_cache/
+.cache/

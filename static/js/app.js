@@ -10,6 +10,7 @@
   if (window.Checklist) window.Checklist.init();
   if (window.RiskEducation) window.RiskEducation.init();
   if (window.Accounts) window.Accounts.init();
+  if (window.Sentiment) window.Sentiment.init();
 
   var checklistButton = document.getElementById("checklist-open");
   if (checklistButton) {

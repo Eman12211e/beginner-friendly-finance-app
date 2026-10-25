@@ -29,6 +29,10 @@ ALLOWED_AGE_RANGES = ["18-24", "25-34", "35-49", "50+"]
 ALLOWED_RISK = ["low", "medium", "high"]
 DEFAULT_PROFILE = {"age_range": "25-34", "risk": "medium"}   # used by warmup only
 
+# Optional Sentiment Explorer (local FinBERT, requirements-sentiment.txt). Off unless SENTIMENT_ENABLED=1.
+SENTIMENT_ENABLED = env("SENTIMENT_ENABLED", "0") == "1"
+SENTIMENT_MODEL = "ProsusAI/finbert"
+
 TTL_QUOTE = 60
 TTL_PROFILE = 86400
 TTL_FINANCIALS = 86400

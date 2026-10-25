@@ -65,6 +65,7 @@ financial-education-mvp/
 │   ├── earnings_service.py     A    Builds the earnings facts object. Pure Python. No AI.
 │   ├── formatting.py           A    Number/date → display strings (rules in API_CONTRACT §2)
 │   ├── ai_service.py           W0 stub → C   ONLY file that calls Claude
+│   ├── sentiment_service.py    Integrator   Optional. ONLY file that loads FinBERT (transformers)
 │   ├── prompts.py              C    All prompt text + fallback sentences
 │   ├── alerts_service.py       D    Builds simulated alerts from demo_stocks.json
 │   └── warmup.py               W0 stub → E   Pre-loads cache when WARM_CACHE=1
@@ -272,7 +273,7 @@ API keys come only from `.env`. Keys never appear in frontend code, logs, or err
 | 3 | **EPS comparison is labeled "EPS vs. analyst estimate: Above / Below / Equal."** Never a bare "Beat". | The benchmark is the analyst consensus, not the company's own standard |
 | 4 | **EPS actual and EPS estimate come from the same source** (Finnhub earnings endpoint). | Adjusted vs. GAAP EPS mixing would create false comparisons |
 | 5 | Claude never claims what a specific analyst or firm said. "Analyst average estimate (source: Finnhub)" is a number, not a story. | We have no such data |
-| 6 | No news in the MVP. | Removes AI-generated slanted stories entirely |
+| 6 | No news in the MVP. The optional Sentiment Explorer uses only fixed, fictional example statements, labelled as not real news. | Removes AI-generated slanted stories entirely |
 | 7 | yfinance runs only in `scripts/build_demo_data.py`, never at runtime. | Unofficial scraper, can break mid-demo |
 | 8 | The app only reads `demo_stocks.json` in the contract schema. What produced it does not matter. | The generator can be replaced later with zero app changes |
 | 9 | Alerts are generated from real values in `demo_stocks.json`. No hand-written alert figures. | No invented numbers |
@@ -287,7 +288,7 @@ API keys come only from `.env`. Keys never appear in frontend code, logs, or err
 1. Read `ARCHITECTURE.md`, `API_CONTRACT.md`, and (if your work touches AI) `AI_RULES.md` before coding.
 2. Edit only files you own. Report needed changes elsewhere; do not make them.
 3. Match the contract exactly: field names, types, nesting, error codes.
-4. No new dependencies unless the planner approves.
+4. No new dependencies unless the planner approves. Approved exception: the optional Sentiment Explorer's packages live only in `requirements-sentiment.txt`; the core app and tests never need them.
 5. No frameworks. No build step.
 6. Never invent, estimate, or hard-code financial figures in code. Real numbers live only in `demo_stocks.json` or come from APIs.
 7. Never suppress an exception to make a test pass. Never return fake success.
